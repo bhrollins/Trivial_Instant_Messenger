@@ -11,9 +11,9 @@ type User struct {
   queuedMessages []string
 }
 
-//func New() User {
-//  return User{}
-//}
+func New(o bool, usr string, pass string) User {
+ return User{o, usr, pass, []string{}}
+}
 
 // ----------------------------- getters --------------------------------------
 func (usr User) IsOnline() bool {

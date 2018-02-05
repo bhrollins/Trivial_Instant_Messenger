@@ -6,8 +6,8 @@ import (
   // "time"
   "bufio"
   "strings"
-//  "user"
-//  "usermanager"
+  "user"
+  "usermanager"
 )
 
 // CRTE -- create user account (provide desired username and password)
@@ -17,7 +17,16 @@ func createUser(original string, input []string) string {
     return fmt.Sprintf("Usage: CRTE [username] [password]")
   }
 
-  return "create"
+  // check if user exists
+  if usermanager.Exists(input[0]) {
+    return fmt.Sprintf("User already exists")
+  }
+
+  // create user
+  usr := user.New(false, input[0], input[1])
+  usermanager.AddUser(usr)
+
+  return fmt.Sprintf("105 User %s created", input[0])
 }
 
 // AUTH -- authenticate a user for a particular account (provide username and password)
@@ -27,7 +36,19 @@ func authenticateUser(original string, input []string) string {
     return fmt.Sprintf("Usage: AUTH [username] [password]")
   }
 
-  return "auth"
+  // check if user exists
+  if usermanager.Exists(input[0]) {
+    return fmt.Sprintf("User already exists")
+  }
+
+  // check if authenticated
+  usr := usermanager.GetUser(input[0])
+
+  if user.Login(usr) {
+    return fmt.Sprintf("102 Connected as %s", input[0])
+  }
+
+  return "Authentication failed"
 }
 
 // SEND -- send a message to another user. (the receiving user will be the first word, then the
@@ -102,7 +123,7 @@ func main() {
 
   ln, err := net.Listen("tcp", ":8080")
   clients := 0
- // usrMgr := new(usermanager.UserManager)
+  usrMgr := new(usermanager.UserManager)
 
   if err != nil {
     fmt.Println(err)

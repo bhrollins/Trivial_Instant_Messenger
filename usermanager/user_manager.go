@@ -2,7 +2,7 @@ package usermanager
 
 import (
 //  "fmt"
-  "user"
+  . "user"
 )
 
 type UserManager struct {
@@ -11,12 +11,12 @@ type UserManager struct {
 
 // add a user to the user manager (database)
 func (mgr *UserManager) AddUser(usr User) {
-  users[user.Username(usr)] = usr
+  mgr.users[usr.Username()] = usr
 }
 
 // check if username is already taken
 func (mgr UserManager) Exists(usr User) bool {
-  _, exists := mgr[user.Username(usr)]
+  _, exists := mgr.users[usr.Username()]
 
   return exists
 }

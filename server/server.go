@@ -6,8 +6,8 @@ import (
   // "time"
   "bufio"
   "strings"
-  "user"
-  "usermanager"
+//  "user"
+//  "usermanager"
 )
 
 // CRTE -- create user account (provide desired username and password)
@@ -102,8 +102,7 @@ func main() {
 
   ln, err := net.Listen("tcp", ":8080")
   clients := 0
-  userMgr = new(usermanager.UserManager)
-  usrMgr.AddUser(new(user.User{online: true, username: "me", password: "you", queuedMessages: []string{"one","two"}}))
+ // usrMgr := new(usermanager.UserManager)
 
   if err != nil {
     fmt.Println(err)

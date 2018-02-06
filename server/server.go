@@ -8,47 +8,57 @@ import (
   "strings"
   "user"
   "usermanager"
+  // "reflect"
 )
 
 // CRTE -- create user account (provide desired username and password)
-func createUser(original string, input []string) string {
+func createUser(original string, input []string, usrMgr *usermanager.UserManager) string {
 
   if len(input) != 2 {
     return fmt.Sprintf("Usage: CRTE [username] [password]")
   }
 
+  name, pass := input[0], input[1]
+
   // check if user exists
-  if usermanager.Exists(input[0]) {
+  if usrMgr.Exists(name) {
     return fmt.Sprintf("User already exists")
   }
 
   // create user
-  usr := user.New(false, input[0], input[1])
-  usermanager.AddUser(usr)
+  usr := user.New(false, name, pass)
+  usrMgr.AddUser(usr)
 
-  return fmt.Sprintf("105 User %s created", input[0])
+  return fmt.Sprintf("105 User %s created", name)
 }
 
 // AUTH -- authenticate a user for a particular account (provide username and password)
-func authenticateUser(original string, input []string) string {
+func authenticateUser(original string, input []string, usrMgr *usermanager.UserManager) []string {
 
   if len(input) != 2 {
-    return fmt.Sprintf("Usage: AUTH [username] [password]")
+    return []string{fmt.Sprintf("Usage: AUTH [username] [password]")}
   }
 
+  name, pass := input[0], input[1]
+
   // check if user exists
-  if usermanager.Exists(input[0]) {
-    return fmt.Sprintf("User already exists")
+  if !usrMgr.Exists(name) {
+    return []string{fmt.Sprintf("User does not exist")}
   }
 
   // check if authenticated
-  usr := usermanager.GetUser(input[0])
+  usr := usrMgr.GetUser(name)
 
-  if user.Login(usr) {
-    return fmt.Sprintf("102 Connected as %s", input[0])
+  if usr.Login(name, pass) {
+    return []string{fmt.Sprintf("102 Connected as %s", name)}
   }
 
-  return "Authentication failed"
+  // return queued messages if there are any
+  if usr.QueueLength() > 0 {
+    return usr.FullQueue()
+  }
+
+  return []string{"Authentication failed"}
 }
 
 // SEND -- send a message to another user. (the receiving user will be the first word, then the
@@ -77,9 +87,9 @@ func quit(original string, input []string) string {
   return "quit"
 }
 
-func handleConnection(conn net.Conn, client_id int) {
+func handleConnection(conn net.Conn, client_id int, usrMgr *usermanager.UserManager) {
 
-  fmt.Println("New Connection")
+  fmt.Printf("New Connection from: %s\n", conn.LocalAddr().(*net.TCPAddr).IP)
 
   defer func() {
     fmt.Println("Closing Connection")
@@ -101,11 +111,14 @@ func handleConnection(conn net.Conn, client_id int) {
 
     switch strings.TrimSpace(command[0]) {
     case "CRTE":
-      output := createUser(input, command[1:])
+      output := createUser(input, command[1:], usrMgr)
       fmt.Fprintf(conn, "%s\n", output)
     case "AUTH":
-      output := authenticateUser(input, command[1:])
-      fmt.Fprintf(conn, "%s\n", output)
+      output := authenticateUser(input, command[1:], usrMgr)
+      // print each of the queued messages (if there are any, otherwise just print normal output)
+      for _, element := range output {
+        fmt.Fprintf(conn, "%s\n", element)
+      }
     case "SEND":
       output := sendMessage(input, command[1:])
       fmt.Fprintf(conn, "%s\n", output)
@@ -143,7 +156,7 @@ func main() {
       return
     }
 
-    go handleConnection(conn, clients)
+    go handleConnection(conn, clients, usrMgr)
 
     clients += 1
 

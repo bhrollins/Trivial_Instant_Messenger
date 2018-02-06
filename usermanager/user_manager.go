@@ -18,8 +18,8 @@ func (mgr *UserManager) AddUser(usr User) {
 }
 
 // check if username is already taken
-func (mgr UserManager) Exists(usr User) bool {
-  _, exists := mgr.users[usr.Username()]
+func (mgr UserManager) Exists(username string) bool {
+  _, exists := mgr.users[username]
 
   return exists
 }

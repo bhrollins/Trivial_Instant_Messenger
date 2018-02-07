@@ -14,10 +14,14 @@ source control is done in the src directory.
 go/
 |
 +--- bin/
-| ...
+    | ...
+    |
+|
 |
 +--- pkg/
-| ...
+    | ...
+    |
+|
 |
 +--- src
     |

@@ -28,7 +28,7 @@ func Authenticate(input []string, conn *connection.Connection) {
   name, pass := input[0], input[1]
   usr := conn.GetUsers().GetUser(name)
 
-  if !conn.GetUsers().Exists(name){
+  if !conn.GetUsers().Exists(name) {
     fmt.Fprintf(conn.GetConn(), "User does not exist\r\n")
     return
   }
@@ -47,10 +47,22 @@ func Authenticate(input []string, conn *connection.Connection) {
   Send Message
  */
 func Send(input []string, conn *connection.Connection) {
+
+  if !conn.IsAuthorized() {
+    fmt.Fprintf(conn.GetConn(), "You are not authorized as a user\r\n")
+    return
+  }
+
   to, mess := input[0], input[1:]
   message := reconstructMessage(mess)
 
-  to_conn := conn.GetUsers().GetUser(to).GetConn()
+  db := conn.GetUsers()
+  if !db.Exists(to) {
+    fmt.Fprintf(conn.GetConn(), "Error: user does not exist\r\n")
+    return
+  }
+
+  to_conn := db.GetUser(to).GetConn()
   from_usr := conn.GetUser().Username()
 
   fmt.Fprintf(to_conn, "Message from %s as follows: %s\r\n", from_usr, message)

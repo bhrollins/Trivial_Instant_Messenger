@@ -10,6 +10,7 @@ type Connection struct {
   conn net.Conn // socket
   user user.User
   users userdatabase.UserDatabase
+  auth bool
 }
 
 // constructor
@@ -17,6 +18,7 @@ func NewConnection(co net.Conn, usrs userdatabase.UserDatabase) *Connection {
   c := new(Connection)
   c.conn = co
   c.users = usrs
+  c.auth = false
 
   return c
 }
@@ -31,10 +33,15 @@ func (conn *Connection) Close() {
 }
 
 func (conn *Connection) SetUser(usr user.User) {
+  conn.auth = true
   conn.user = usr
 }
 
 // ---------------------- value-receiver functions ----------------------------
+func (conn Connection) IsAuthorized() bool {
+  return conn.auth
+}
+
 func (conn Connection) GetUser() user.User {
   return conn.user
 }

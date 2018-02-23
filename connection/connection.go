@@ -8,7 +8,7 @@ import (
 
 type Connection struct {
   conn net.Conn // socket
-  user user.User
+  user *user.User
   users userdatabase.UserDatabase
   auth bool
 }
@@ -25,14 +25,12 @@ func NewConnection(co net.Conn, usrs userdatabase.UserDatabase) *Connection {
 
 // -------------------- pointer-receiver functions ----------------------------
 func (conn *Connection) Close() {
-  // close this gracefully somehow
-  // TODO... implement this.
-  conn.conn = nil
-  // conn.user = nil
-  // conn.users = nil
+  // TODO: make sure the "gracefully closed" requirement is satisfied
+  conn.user.Disconnect()
+  conn.conn.Close()
 }
 
-func (conn *Connection) SetUser(usr user.User) {
+func (conn *Connection) SetUser(usr *user.User) {
   conn.auth = true
   conn.user = usr
 }
@@ -42,7 +40,7 @@ func (conn Connection) IsAuthorized() bool {
   return conn.auth
 }
 
-func (conn Connection) GetUser() user.User {
+func (conn Connection) GetUser() *user.User {
   return conn.user
 }
 

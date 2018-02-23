@@ -9,7 +9,20 @@ func cleanInput(c rune) bool {
   return c < 32 || c > 126
 }
 
+func removeSpaces(input []string) []string {
+  nospace := make([]string, 0)
+
+  for _, val := range input {
+    if val != "" {
+      nospace = append(nospace, val)
+    }
+  }
+
+  return nospace
+}
+
 func checkInput(command string, input []string) string {
+    input = removeSpaces(input)
     switch command {
     case "CRTE":
       fallthrough
@@ -22,7 +35,7 @@ func checkInput(command string, input []string) string {
         return fmt.Sprintf("Usage: SEND [username] <message>")
       }
     case "QUIT":
-      // todo implement check
+      // TODO: implement check?
       return ""
     }
 

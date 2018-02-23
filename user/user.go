@@ -8,8 +8,9 @@ import (
 type User struct {
   password string
   username string
-  queuedMessages []string
+  queuedMessages map[string][]string
   conn net.Conn
+  isConnected bool
 }
 
 // constructor
@@ -17,7 +18,8 @@ func NewUser(n, p string) *User {
   u := new(User)
   u.password = p
   u.username = n
-  u.queuedMessages = []string{}
+  u.queuedMessages = make(map[string][]string)
+  u.isConnected = false
 
   return u
 }
@@ -27,7 +29,7 @@ func (usr User) Username() string {
   return usr.username
 }
 
-func (usr User) Messages() []string {
+func (usr User) Messages() map[string][]string {
   return usr.queuedMessages
 }
 
@@ -41,20 +43,28 @@ func (usr *User) Authenticate(n, p string) bool {
 }
 
 func (usr *User) ClearMessages() {
-  usr.queuedMessages = []string{}
+  usr.queuedMessages = make(map[string][]string)
+}
+
+func (usr *User) AddToQueue(from string, msg string) {
+  msgs := usr.queuedMessages[from]
+
+  usr.queuedMessages[from] = append(msgs, msg)
 }
 
 func (usr *User) Connect(c net.Conn) {
+  usr.isConnected = true
   usr.conn = c
 }
 
 func (usr *User) Disconnect() {
+  usr.isConnected = false
   usr.conn = nil
 }
 
 // ---------------------- value-receiver functions ----------------------------
 func (usr User) Connected() bool {
-  return usr.conn == nil
+  return usr.isConnected
 }
 
 func (usr User) Send(from, mess string) {
@@ -63,4 +73,8 @@ func (usr User) Send(from, mess string) {
 
 func (usr User) GetConn() net.Conn {
   return usr.conn
+}
+
+func (usr User) QueueLength() int {
+  return len(usr.queuedMessages)
 }

@@ -40,7 +40,10 @@ func handleConnection(conn net.Conn) {
       return
     }
 
+    // remove any non-ascii characters:
     input = strings.TrimFunc(input, cleanInput)
+    // trim leading and tailing whitespace:
+    input = strings.Trim(input, " ")
     fullCommand := strings.Split(input, " ")
     command, args := fullCommand[0], fullCommand[1:]
 
@@ -61,7 +64,7 @@ func handleConnection(conn net.Conn) {
     case "QUIT":
       Quit(args, c)
     default:
-      fmt.Fprintf(conn, "No such command \"%s\"\r\n", input)
+      fmt.Fprintf(conn, "205 No such command \"%s\".\r\n", input)
     }
 
   }
@@ -74,10 +77,10 @@ func main() {
   db := userdatabase.NewUserDatabase()
   srvr.users = *db
 
-  // create socket listening on port 8080
-  ln, err := net.Listen("tcp", ":8080")
+  // create socket listening on port 7778
+  ln, err := net.Listen("tcp", ":7778")
 
-  if err != nil { // TODO: handle this better
+  if err != nil { // TODO: handle this without crashing server
     fmt.Println(err)
     return
   }
@@ -91,7 +94,7 @@ func main() {
   for {
     conn, err := ln.Accept()
 
-    if err != nil { // TODO: handle this better
+    if err != nil { // TODO: handle this without crashing server
       fmt.Println(err)
       return
     }

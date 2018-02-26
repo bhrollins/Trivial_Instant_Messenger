@@ -1,3 +1,11 @@
+/*
+  Authors: Brendon Rollins, Kyle Brewington, Mason Baird
+  Date: Feb 26th 2018
+
+  Description:
+    This file defines a basic connection object.
+*/
+
 package connection
 
 import (
@@ -6,6 +14,9 @@ import (
   "userdatabase"
 )
 
+/*
+  Connection object
+ */
 type Connection struct {
   conn net.Conn // socket
   user *user.User
@@ -13,7 +24,9 @@ type Connection struct {
   auth bool
 }
 
-// constructor
+/*
+  Connection constructor
+ */
 func NewConnection(co net.Conn, usrs userdatabase.UserDatabase) *Connection {
   c := new(Connection)
   c.conn = co
@@ -24,34 +37,47 @@ func NewConnection(co net.Conn, usrs userdatabase.UserDatabase) *Connection {
 }
 
 // -------------------- pointer-receiver functions ----------------------------
+/*
+  Disconnect user and close the connection.
+ */
 func (conn *Connection) Close() {
-  // TODO: make sure the "gracefully closed" requirement is satisfied
   conn.user.Disconnect()
   conn.conn.Close()
 }
 
+/*
+  Set user object for conn and toggle authenticated flag
+ */
 func (conn *Connection) SetUser(usr *user.User) {
   conn.auth = true
   conn.user = usr
 }
 
 // ---------------------- value-receiver functions ----------------------------
+/*
+  return authorized flag
+ */
 func (conn Connection) IsAuthorized() bool {
   return conn.auth
 }
 
+/*
+  return pointer to user object
+ */
 func (conn Connection) GetUser() *user.User {
   return conn.user
 }
 
+/*
+  return connection object
+ */
 func (conn Connection) GetConn() net.Conn {
   return conn.conn
 }
 
+/*
+  get UserDatabase object
+ */
 func (conn Connection) GetUsers() userdatabase.UserDatabase {
   return conn.users
 }
-
-// func (conn connection) Send(message string) {
-//   conn.user.Send(conn.user.Username(), message)
-// }

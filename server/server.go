@@ -1,3 +1,12 @@
+/*
+  Authors: Brendon Rollins, Kyle Brewington, Mason Baird
+  Date: Feb 26th 2018
+
+  Description:
+    This is the entry point for this project. Here we start a socket listening
+    on port 7778 and spin off a thread for each connection made.
+*/
+
 package main
 
 import (
@@ -14,16 +23,24 @@ type server struct {
   users userdatabase.UserDatabase
 }
 
-// ------------------------------- global server ------------------------------
+// global server object
 var srvr = new(server)
 
 // ------------------------------ handle connection ---------------------------
+/*
+  handleConnection
+
+  thread target function
+    accepts input from connection and executes appropriate commands
+ */
 func handleConnection(conn net.Conn) {
+  // get ip of connection
   ip := conn.RemoteAddr().(*net.TCPAddr).IP
 
   c := connection.NewConnection(conn, srvr.users)
   fmt.Printf("New Connection from: %s\n", ip)
 
+  // close connection when this function exits
   defer func() {
     fmt.Printf("Closing connection for: %s\n", ip)
     conn.Close()
@@ -54,6 +71,7 @@ func handleConnection(conn net.Conn) {
       continue
     }
 
+    // Depending on the command, do said function
     switch command {
     case "CRTE":
       CreateUser(args, c)
@@ -80,11 +98,13 @@ func main() {
   // create socket listening on port 7778
   ln, err := net.Listen("tcp", ":7778")
 
-  if err != nil { // TODO: handle this without crashing server
+  // If error, print error and exit
+  if err != nil {
     fmt.Println(err)
     return
   }
 
+  // called when main exits:
   defer func() {
     ln.Close()
     fmt.Println("Listener closed")
@@ -94,9 +114,9 @@ func main() {
   for {
     conn, err := ln.Accept()
 
-    if err != nil { // TODO: handle this without crashing server
+    if err != nil {
       fmt.Println(err)
-      return
+      continue
     }
 
     go handleConnection(conn)
